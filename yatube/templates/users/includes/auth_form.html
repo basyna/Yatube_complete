@@ -1,0 +1,5 @@
+{% load user_filters %}
+{% csrf_token %}
+{% for field in form %}
+  {% include 'includes/form_field.html'%}
+{% endfor %}

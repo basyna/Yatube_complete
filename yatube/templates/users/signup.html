@@ -1,0 +1,14 @@
+{% extends "includes/card_body.html" %}
+{% block title %}Зарегистрироваться{% endblock %}
+{% block card %}
+  <div class="card-header">Зарегистрироваться</div>
+  {% include 'includes/form_errors.html' %}
+  <div class="card-body">
+    <form method="post" action="{% url 'users:signup' %}">
+      {% include 'users/includes/auth_form.html' %}
+      <div class="col-md-6 offset-md-4">
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
