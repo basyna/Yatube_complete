@@ -79,6 +79,13 @@ class Comment(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self) -> str:
+        return self.text[:15]
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -93,3 +100,16 @@ class Follow(models.Model):
         verbose_name='Автор',
         related_name='following'
     )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='name of constraint'
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.user} подписан на {self.author}'

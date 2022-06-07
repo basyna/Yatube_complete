@@ -8,7 +8,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Page
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
 from posts.forms import PostForm
 from posts.models import Comment, Follow, Group, Post, User
 
@@ -230,6 +229,7 @@ class TestPostPaginator(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.auth_user = User.objects.create_user(username='NoName')
         cls.EXTRA_PAGES = 3
         cls.group = Group.objects.create(
             title='Тестовая группа',
@@ -240,7 +240,6 @@ class TestPostPaginator(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.auth_client = Client()
-        self.auth_user = User.objects.create_user(username='NoName')
         self.auth_client.force_login(self.auth_user)
         for i in range(settings.POSTS_ON_PAGE + self.EXTRA_PAGES):
             Post.objects.create(
@@ -274,3 +273,29 @@ class TestPostPaginator(TestCase):
                     )
                     page: Page = response.context['page_obj']
                     self.assertEqual(len(page.object_list), page_info['count'])
+
+    def test_follow_paging(self):
+        self.follow_user = User.objects.create_user(username='Follow')
+        Follow.objects.create(
+            user=self.follow_user,
+            author=self.auth_user
+        )
+        self.follow_client = Client()
+        self.follow_client.force_login(self.follow_user)
+        pages = [
+            {
+                'number': 1,
+                'count': settings.POSTS_ON_PAGE,
+            },
+            {
+                'number': 2,
+                'count': self.EXTRA_PAGES,
+            }
+        ]
+        for page_info in pages:
+            response = self.follow_client.get(
+                reverse('posts:follow_index'),
+                {'page': page_info['number']}
+            )
+            page: Page = response.context['page_obj']
+            self.assertEqual(len(page.object_list), page_info['count'])

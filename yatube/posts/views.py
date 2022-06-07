@@ -29,21 +29,13 @@ def group_posts(request, slug):
 def profile(request, username):
     template = 'posts/profile.html'
     post_user = get_object_or_404(User, username=username)
-    if request.user.is_authenticated:
-        follower = get_object_or_404(User, username=request.user)
-    else:
-        follower = None
-    if post_user != follower:
-        button_follow_visible = True
-    else:
-        button_follow_visible = False
-    following = Follow.objects.filter(user=follower, author=post_user).exists()
+    following = request.user.is_authenticated and Follow.objects.filter(
+        user=request.user, author=post_user).exists()
     page_obj = paging(post_user.posts.all(), request)
     context = {
         'post_user': post_user,
         'page_obj': page_obj,
         'following': following,
-        'visible': button_follow_visible
     }
     return render(request, template, context)
 
@@ -107,16 +99,16 @@ def add_comment(request, post_id):
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
-        comment.save()
+        form.save()
     return redirect('posts:post_detail', post_id)
 
 
 @login_required
 def follow_index(request):
     template = 'posts/follow.html'
-    followers: Follow = Follow.objects.filter(user=request.user)
-    follow_list = User.objects.filter(following__in=followers)
-    page_obj = paging(Post.objects.filter(author__in=follow_list), request)
+    page_obj = paging(
+        Post.objects.filter(author__following__user=request.user), request
+    )
     context = {
         'page_obj': page_obj,
     }
@@ -125,25 +117,20 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    follower = get_object_or_404(User, username=request.user)
+    follower = request.user
     following = get_object_or_404(User, username=username)
-    if not Follow.objects.filter(user=follower, author=following).exists():
-        if follower != following:
-            Follow.objects.create(
-                user=follower,
-                author=following
-            )
+    if follower != following:
+        Follow.objects.get_or_create(user=follower, author=following)
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    follower = get_object_or_404(User, username=request.user)
+    follower = request.user
     following = get_object_or_404(User, username=username)
-    follow = Follow.objects.filter(
+    follow = Follow.objects.get(
         user=follower,
         author=following
     )
-    if len(follow) == 1:
-        follow.delete()
+    follow.delete()
     return redirect('posts:profile', username)
