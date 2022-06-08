@@ -128,7 +128,8 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     follower = request.user
     following = get_object_or_404(User, username=username)
-    follow = Follow.objects.get(
+    follow = get_object_or_404(
+        Follow,
         user=follower,
         author=following
     )
