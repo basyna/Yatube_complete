@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'te_9xvukegmtg@xr186)zwhgv@qy32jgvjtsdbufa-$lcgi7q$'
 
-DEBUG = True
+DEBUG = False
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 POSTS_ON_PAGE = 10
@@ -16,6 +16,7 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 ALLOWED_HOSTS = [
     'localhost',
+    '158.160.5.113',
     '127.0.0.1',
     '[::1]',
     'testserver',
